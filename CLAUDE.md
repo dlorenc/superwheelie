@@ -12,10 +12,10 @@ Superwheelie is a Git-based Python wheel build system designed to build wheels f
 # Build the Docker container
 docker build -t superwheelie-build .
 
-# Run Go tests (once implemented)
+# Run Go tests
 go test ./...
 
-# Build all agents
+# Build all agents (once implemented)
 go build ./cmd/...
 
 # Build specific agent
@@ -37,10 +37,28 @@ Go agents in `cmd/` orchestrate work, invoke Claude Code CLI for iterative debug
 - **gc**: Recovers packages from crashed agents (TTL-based)
 
 ### Shared Libraries (pkg/)
-- **config**: YAML schema types (Config, Skips, Claims, Override)
-- **builder**: Wheel build orchestration
-- **gcs**: Upload wheels/logs to gs://dlorenc-superwheelie
-- **git**: Git operations, claims branch, PR creation via gh CLI
+
+**Implemented:**
+- **pkg/config**: YAML schema types and parsing
+  - `Config`, `Version`, `Override` types (config.yaml)
+  - `Skips`, `Skip` types (skips.yaml)
+  - `Claim` type (claims branch)
+  - `LoadConfig`, `SaveConfig`, `LoadSkips`, `SaveSkips`, `LoadClaim`, `SaveClaim`
+  - `ValidateConfig`, `ValidateSkips`, `ValidateClaim`
+  - `MatchesVersion` for PEP 440 version specifier matching
+
+- **pkg/builder**: Wheel build orchestration
+  - `Builder` type with `New`, `Setup`, `Build`, `BuildAll`
+  - `CloneSource`, `Checkout`, `InstallSystemDeps`, `ApplyPatches`
+  - `BuildResult` type with Version, Python, WheelPath, Success, Log, Error
+  - Config override merging (PEP 440 matching)
+  - `PythonBinary`, `PythonCPVersion`, `WheelFilename` helpers
+  - `Exec`, `ExecWithTimeout`, `ExecSimple` command helpers
+
+**Not yet implemented:**
+- **pkg/gcs**: Upload wheels/logs to gs://dlorenc-superwheelie (issue #3)
+- **pkg/git**: Git operations, claims branch, PR creation (issue #4)
+- **pkg/claude**: Claude Code CLI integration (issue #5)
 
 ### Claude Code Integration
 Agents invoke Claude Code as subprocess with `--print --output-format json`. Claude generates config.yaml/skips.yaml files that agents read back (file-based contract, not parsing conversational output).
@@ -66,3 +84,28 @@ gs://dlorenc-superwheelie/
 ├── wheels/{package}/{version}/{wheel}.whl
 └── logs/{package}/{version}/{python}/build.log
 ```
+
+## Current Status
+
+**Completed:**
+- Issue #1: pkg/config - YAML types and parsing ✓
+- Issue #2: pkg/builder - Wheel build orchestration ✓
+
+**Open issues (in suggested order):**
+- Issue #3: pkg/gcs - GCS upload/download utilities
+- Issue #4: pkg/git - Git and GitHub operations
+- Issue #5: pkg/claude - Claude Code CLI integration
+- Issue #6: cmd/build-agent - Build agent implementation
+- Issue #7: cmd/version-agent - Version agent implementation
+- Issue #8: cmd/fixer-agent - Fixer agent implementation
+- Issue #9: cmd/review-agent - Review agent implementation
+- Issue #10: cmd/gc - Garbage collector implementation
+- Issue #11: CI - GitHub Actions workflows
+- Issue #12: Bootstrap - Initial queue.txt with packages
+
+## Infrastructure
+
+- **GitHub repo**: https://github.com/dlorenc/superwheelie
+- **GCS bucket**: gs://dlorenc-superwheelie
+- **OIDC**: GitHub Actions can authenticate via Workload Identity Federation
+- **Service account**: superwheelie-gha@dlorenc-chainguard.iam.gserviceaccount.com
