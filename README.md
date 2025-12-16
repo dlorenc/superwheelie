@@ -51,17 +51,30 @@ claims/
   requests.yaml
 ```
 
+## Infrastructure
+
+**GCS Bucket:** `gs://dlorenc-superwheelie`
+
+**GitHub Actions OIDC:**
+```yaml
+# In GitHub Actions workflow
+- uses: google-github-actions/auth@v2
+  with:
+    workload_identity_provider: projects/320310132788/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+    service_account: superwheelie-gha@dlorenc-chainguard.iam.gserviceaccount.com
+```
+
 ## GCS Structure
 
 Wheels and logs stored in PyPI-style layout:
 
 ```
-gs://bucket/
+gs://dlorenc-superwheelie/
 ├── wheels/
 │   └── {package}/
 │       └── {version}/
-│           ├── {package}-{version}-cp310-cp310-linux_x86_64.whl
-│           ├── {package}-{version}-cp311-cp311-linux_x86_64.whl
+│           ├── {package}-{version}-cp310-cp310-linux_aarch64.whl
+│           ├── {package}-{version}-cp311-cp311-linux_aarch64.whl
 │           └── ...
 └── logs/
     └── {package}/
